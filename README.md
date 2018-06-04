@@ -1,6 +1,6 @@
 TCC
 
-#Libraries
+# Libraries
 
-Numpy
-Scikit.audiolab
+* Numpy
+* Scikit.audiolab
