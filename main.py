@@ -1,17 +1,11 @@
-import numpy as np
-import scikits.audiolab as audiolab
+import audio.audioHandler as audio
+import supression.spectralSubtraction as specSub
+import noisy.noisy as noisy
+import tests.tests as test
 
 testAudio = 'history.wav'
 
-def audioData (audioPath):
-    data = audiolab.wavread(audioPath)
+suppressedAudio, noisyAudio, sampleRate = test.spectral(testAudio, useEstimate=True)
 
-    return data
-
-def playAudio (audioArray, sampleRate):
-    audiolab.play(audioArray, sampleRate)
-
-data = audioData(testAudio)
-print(data[0])
-
-playAudio(data[0], data[1])
+audio.play(noisyAudio, sampleRate)
+audio.play(suppressedAudio, sampleRate)
