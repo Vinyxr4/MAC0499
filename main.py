@@ -1,5 +1,7 @@
 import numpy as np
 import scikits.audiolab as audiolab
+import supression.spectralSubtraction as specSub
+import noisy.noisy as noisy
 
 testAudio = 'history.wav'
 
@@ -11,7 +13,10 @@ def audioData (audioPath):
 def playAudio (audioArray, sampleRate):
     audiolab.play(audioArray, sampleRate)
 
-data = audioData(testAudio)
-print(data[0])
+audioArray, sampleRate, encoding = audioData(testAudio)
 
-playAudio(data[0], data[1])
+noisyAudio, noise = noisy.noisyArray(audioArray)
+
+transformed = specSub.spectralSubtraction(noisyAudio)
+
+playAudio(transformed, sampleRate)
