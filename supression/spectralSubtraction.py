@@ -2,7 +2,8 @@ import numpy as np
 
 def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01):
     if noiseArray is None:
-        lastOnRange = int(np.floor(audioArray.size * estimate))
+        lastOnRange = int(np.floor(estimate))
+        print(lastOnRange)
         noiseEstimate = audioArray[0:lastOnRange]
 
         repetitions = int(np.floor(audioArray.size/noiseEstimate.size))
@@ -23,4 +24,6 @@ def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01):
 
     supressedAudio = np.fft.ifft(subtraction).real
 
-    return supressedAudio
+    print(noiseArray)
+
+    return supressedAudio, noiseArray
