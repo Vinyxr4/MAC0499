@@ -17,7 +17,7 @@ def spectral(audioPath, freq=500, useEstimate=False, noiseType='sin', amplitude 
     if useEstimate is True:
         noise = None
 
-    firstPeriod = 1.0 * sampleRate / freq
+    firstPeriod = 0.25 * sampleRate
 
     suppressedAudio, noiseUsed = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod)
 

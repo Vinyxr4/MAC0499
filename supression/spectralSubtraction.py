@@ -19,11 +19,20 @@ def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01):
         noiseArray = noiseArray[0:audioArray.size]
 
     transformedAudio = np.fft.fft(audioArray)
+    tranfAudiophase = np.angle(transformedAudio)
+    tranfAudioAmp = np.absolute(transformedAudio)
+    audioPwr = tranfAudioAmp ** 2
+
     transformedNoise = np.fft.fft(noiseArray)
-    subtraction = transformedAudio - transformedNoise
+    tranfNoiseAmp = np.absolute(transformedNoise)
+    noisePwr = tranfNoiseAmp ** 2
 
-    supressedAudio = np.fft.ifft(subtraction).real
+    subtraction = audioPwr - noisePwr
+    subtraction = np.maximum(subtraction, 0)
+    subtraction = np.sqrt(subtraction)
 
-    print(noiseArray)
+    suppressedFreqDomain = subtraction * np.exp(tranfAudiophase * 1j)
 
-    return supressedAudio, noiseArray
+    suppressedAudio = np.fft.ifft(suppressedFreqDomain).real
+
+    return suppressedAudio, noiseArray
