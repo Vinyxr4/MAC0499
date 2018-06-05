@@ -6,7 +6,7 @@ import numpy as np
 
 testAudio = 'history.wav'
 
-suppressedAudio, noisyAudio, sampleRate, noise = test.spectral(testAudio, useEstimate=True)
+suppressedAudio, noisyAudio, sampleRate, noise = test.spectral(testAudio, useEstimate=True, amplitude=0.2, freq=1000)
 
 print('Noisy audio:')
 audio.play(noisyAudio, sampleRate)
@@ -15,8 +15,3 @@ print('Spectral supressed audio:')
 audio.play(suppressedAudio, sampleRate)
 
 audioArray, sampleRate, encoding = audio.getData(testAudio)
-
-audio.play(noise, sampleRate)
-
-print('Signal domain suppresed audio:')
-audio.play(noisyAudio - noise, sampleRate)

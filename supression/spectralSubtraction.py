@@ -1,9 +1,9 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01):
     if noiseArray is None:
         lastOnRange = int(np.floor(estimate))
-        print(lastOnRange)
         noiseEstimate = audioArray[0:lastOnRange]
 
         repetitions = int(np.floor(audioArray.size/noiseEstimate.size))
@@ -30,6 +30,17 @@ def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01):
     subtraction = audioPwr - noisePwr
     subtraction = np.maximum(subtraction, 0)
     subtraction = np.sqrt(subtraction)
+
+    """time_step = 1.0 / 30
+    freqs = np.fft.fftfreq(audioArray.size, time_step)
+    idx = np.argsort(freqs)
+
+    plt.plot(freqs[idx], audioPwr[idx])
+    plt.savefig('test.png')
+    plt.plot(freqs[idx], noisePwr[idx])
+    plt.show()
+    plt.plot(freqs[idx], subtraction[idx])
+    plt.show()"""
 
     suppressedFreqDomain = subtraction * np.exp(tranfAudiophase * 1j)
 

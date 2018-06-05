@@ -2,7 +2,7 @@ import audio.audioHandler as audio
 import supression.spectralSubtraction as specSub
 import noisy.noisy as noisy
 
-def spectral(audioPath, freq=500, useEstimate=False, noiseType='sin', amplitude = 0.2):
+def spectral(audioPath, freq=500, useEstimate=False, noiseType='sin', amplitude = 0.2, seconds = 0.01):
     testAudio = audioPath
 
     audioArray, sampleRate, encoding = audio.getData(testAudio)
@@ -17,7 +17,7 @@ def spectral(audioPath, freq=500, useEstimate=False, noiseType='sin', amplitude 
     if useEstimate is True:
         noise = None
 
-    firstPeriod = 0.25 * sampleRate
+    firstPeriod = seconds * sampleRate
 
     suppressedAudio, noiseUsed = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod)
 
