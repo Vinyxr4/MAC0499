@@ -3,15 +3,23 @@ import supression.spectralSubtraction as specSub
 import noisy.noisy as noisy
 import tests.tests as test
 import numpy as np
+import multiprocessing as mp
 
-testAudio = 'history.wav'
 
-suppressedAudio, noisyAudio, sampleRate, noise = test.spectral(testAudio, useEstimate=True, amplitude=0.2, freq=1000)
+testAudio = 'die_hard.wav'
+
+audioArray, sampleRate, encoding = audio.getData(testAudio)
+
+totalSeconds = 1.0 * audioArray.size / sampleRate
+
+instances = int(totalSeconds / 2)
+
+suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio, useEstimate=True, amplitude=0.2, freq=1000, splitRate=instances, processes=instances)
+
+print(elapsedTime)
 
 print('Noisy audio:')
-audio.play(noisyAudio, sampleRate)
+#audio.play(noisyAudio, sampleRate)
 
 print('Spectral supressed audio:')
 audio.play(suppressedAudio, sampleRate)
-
-audioArray, sampleRate, encoding = audio.getData(testAudio)
