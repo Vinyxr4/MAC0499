@@ -1,25 +1,50 @@
 import numpy as np
+import math
 
-def flms(signalInput, signalOutput, desiredOutput, M):
-    U = kthMatrixFromInput(signalInput, M=M*2, k=1)
+def FLMS(signalInput, desiredOutput, M):
+    blocks = int(math.ceil(1.0 * signalInput.size/M))
+    outputBlock = signalInput[:M]
+    res = []
+    coefficients = np.zeros(2*M)
+
+    for i in range(blocks):
+        inp = []
+        des = []
+        remaining = signalInput.size - (i-1)*M
+        if i == 0:
+            padding = np.zeros(M)
+            inp = np.append(padding, signalInput[:M])
+        elif remaining < 2*M:
+            padding = np.zeros(2*M-remaining)
+            inp = np.append(signalInput[(i-1)*M:], padding)
+        else:
+            inp = signalInput[(i-1)*M:(i+1)*M]
+
+        des = desiredOutput[i*M:(i+1)*M]
+
+        outputBlock, coefficients = flms(inp, outputBlock, des, coefficients, M, i)
+        res.append(outputBlock)
+
+    return np.asarray(res).ravel()[:signalInput.size]
+
+def flms(signalInput, signalOutput, desiredOutput, coefficients, M, k):
+    # U = kthMatrixFromInput(signalInput, M=M*2, k=k)
+    
+    U = np.fft.fft(signalInput)
+    
     UH = conjugateUpdate(U)
 
-    coefficients = np.random.rand(2*M)
-
+    signalOutput = outputUpdate(U, coefficients, M)
     error = errorUpdate(desiredOutput, signalOutput, M=M)
-    
+    print(np.abs(np.fft.ifft(error)))
     constraint = gradientConstraint(error, UH, M)
     
-    signalOutput = outputUpdate(U, coefficients, M)
-    
-    coefficients = coeffUpdate(constraint, coefficients, step=0.5)
-    
-    return signalOutput
+    coefficients = coeffUpdate(constraint, coefficients, step=0.1)
+    # print(coefficients)
+    return signalOutput, coefficients
 
 def gradientConstraint (error, UH, M=30):
-    error = error.reshape(2*M, 1)
-
-    convolution = np.dot(UH, error)
+    convolution = UH * error
     invConvolution = np.fft.ifft(convolution)
     
     padding = np.zeros(M)
@@ -57,7 +82,7 @@ def kthMatrixFromInput(input, M=30, k=1):
     return np.fft.fftn(matrix, axes=(0,1)) 
 
 def outputUpdate (matrixU, coefficients, M):
-    convolution = np.dot(matrixU, coefficients)
+    convolution = matrixU * coefficients
 
     invConvolution = np.fft.ifft(convolution)
 
