@@ -1,5 +1,6 @@
 import audio.audioHandler as audio
 import supression.spectralSubtraction as specSub
+import supression.fastLMS as flms
 import noisy.noisy as noisy
 import tests.tests as test
 import numpy as np
