@@ -2,31 +2,97 @@ import audio.audioHandler as audio
 import supression.spectralSubtraction as specSub
 import supression.fastLMS as flms
 import noisy.noisy as noisy
+import numpy as np
+import matplotlib.pyplot as plt
+import math
 
-def spectral(audioPath, freq=500, useEstimate=False, noiseType='sin', amplitude = 0.2, seconds = 0.01, processes=4, splitRate=1, method='spectral'):
-    testAudio = audioPath
-
-    audioArray, sampleRate, encoding = audio.getData(testAudio)
+def prepare(audioPath, useEstimate, noiseType, freq, amplitude):
+    audioArray, sampleRate, encoding = audio.getData(audioPath)
 
     noisyAudio = None
     noise = None
+
     if noiseType == 'sin':
         noisyAudio, noise = noisy.sinNoise(audioArray, sampleRate, freq, amplitude)
     elif noiseType == 'random':
         noisyAudio, noise = noisy.randomNoise(audioArray, amplitude)
 
-    if useEstimate is True:
+    if useEstimate:
         noise = None
 
+    return audioArray, sampleRate, noisyAudio, noise
+
+def fitArray(arr1, arr2):
+    fittedArr = arr1
+
+    if arr1.size < arr2.size:
+        repetitions = int(np.floor(arr2.size/arr1.size))
+        fittedArr = np.tile(fittedArr, repetitions)
+        fittedArr = np.append(fittedArr, fittedArr[0:arr2.size - fittedArr.size])
+    elif arr1.size > arr2.size:
+        fittedArr = arr1[0:arr2.size]
+
+    return fittedArr
+
+def fastlms(audioPath, freq=1000, noiseType='sin', amplitude=0.1, M=100, step=0.1, forget=0.9):
+    audioArray, sampleRate, noisyAudio, noise = prepare(audioPath, False, noiseType, freq, amplitude)    
+    
+
+    noiseArray = None
+    if noiseArray is None:
+        lastOnRange = int(np.floor(sampleRate*0.4))
+        noiseEstimate = noisyAudio[0:lastOnRange]
+
+        repetitions = int(np.floor(noisyAudio.size/noiseEstimate.size))
+
+        noiseArray = np.tile(noiseEstimate, repetitions)
+        noiseArray = np.append(noiseArray, noiseEstimate[0:noisyAudio.size - noiseArray.size])
+    
+    t = int(math.floor(sampleRate * 0.73))
+    #desiredArray = np.roll(desiredArray, t)
+    aux=np.roll(noisyAudio, t)
+    desiredArray = np.append(noisyAudio[:t], 0.5*noisyAudio[t:]+0.5*aux[t:])
+    audio.play(desiredArray, sampleRate)
+    plt.plot(noisyAudio)
+    plt.plot(desiredArray)
+    plt.show()
+    
+    corr = np.correlate(noisyAudio, desiredArray, 'full')
+    delay = int(len(corr)/2) - np.argmax(corr)
+    distance = delay / sampleRate * 343
+    print("Distance full: %.2f cm" % (distance * 100))
+    suppressedAudio, elapsedTime = flms.fastLms(noisyAudio, desiredArray, M, step=step, forgetness=forget)
+
+    return suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime
+
+def plotResult(audioArray, noisyAudio, suppressedAudio, save=False):
+    time_step = 1.0 / 30
+    freqs = np.fft.fftfreq(audioArray.size, time_step)
+    idx = np.argsort(freqs)
+
+    original = np.absolute(np.fft.fft(audioArray))**2
+    noisy = np.absolute(np.fft.fft(noisyAudio))**2
+    suppressed = np.absolute(np.fft.fft(suppressedAudio))**2
+    plt.plot(freqs[idx], original[idx])
+    if save:
+        plt.savefig('originalPwr.png')
+    plt.show()
+
+    plt.plot(freqs[idx], noisy[idx])
+    if save:
+        plt.savefig('noisyPwr.png')
+    plt.show()
+
+    plt.plot(freqs[idx], suppressed[idx])
+    if save:
+        plt.savefig('suppressedPwr.png')
+    plt.show()
+
+def spectral(audioPath, freq=1000, useEstimate=True, noiseType='sin', amplitude = 0.1, seconds = 0.01, processes=4, splitRate=1):
+    audioArray, sampleRate, noisyAudio, noise = prepare(audioPath, useEstimate, noiseType, freq, amplitude)    
+
     firstPeriod = seconds * sampleRate
-
-    noiseUsed = noise
-    suppressedAudio = []
-    elapsedTime = 0
-    if method == 'spectral':
-        suppressedAudio, noiseUsed, elapsedTime = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod, processes=processes, splitRate=splitRate)
-    elif method == 'flms':
-        suppressedAudio, elapsedTime = flms.fastLms(noisyAudio, audioArray, 100, step=0.5, forgetness=0.7)
-
+    
+    suppressedAudio, noiseUsed, elapsedTime = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod, processes=processes, splitRate=splitRate)
 
     return suppressedAudio, noisyAudio, sampleRate, noiseUsed, elapsedTime

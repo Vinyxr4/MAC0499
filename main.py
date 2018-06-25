@@ -15,7 +15,8 @@ totalSeconds = 1.0 * audioArray.size / sampleRate
 
 instances = int(totalSeconds / 2)
 
-suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio, useEstimate=True, amplitude=0.2, freq=1000, splitRate=instances, processes=instances, method='flms')
+# suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
+suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
 
 print(elapsedTime)
 
