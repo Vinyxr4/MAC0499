@@ -6,8 +6,10 @@ import tests.tests as test
 import numpy as np
 import multiprocessing as mp
 
+audio_path = 'audio_files'
+audios = ['history', 'die_hard']
 
-testAudio = 'history.wav'
+testAudio = '{}/{}.wav'.format(audio_path, audios[0])
 
 audioArray, sampleRate, encoding = audio.getData(testAudio)
 
