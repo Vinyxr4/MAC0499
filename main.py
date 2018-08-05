@@ -22,4 +22,4 @@ print('Noisy audio:')
 #audio.play(noisyAudio, sampleRate)
 
 print('Spectral supressed audio:')
-audio.play(suppressedAudio, sampleRate)
+audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
