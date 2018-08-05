@@ -7,7 +7,7 @@ import numpy as np
 import multiprocessing as mp
 
 
-testAudio = 'die_hard.wav'
+testAudio = 'history.wav'
 
 audioArray, sampleRate, encoding = audio.getData(testAudio)
 
@@ -21,7 +21,8 @@ suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testA
 print(elapsedTime)
 
 print('Noisy audio:')
-audio.play(noisyAudio, sampleRate)
+# audio.play(noisyAudio, sampleRate)
+audio.saveAs(noisyAudio, sampleRate, 'noisy.wav')
 
 print('Spectral supressed audio:')
 audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
