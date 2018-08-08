@@ -6,6 +6,8 @@ import tests.tests as test
 import numpy as np
 import multiprocessing as mp
 
+import supression.Plca as plca
+
 audio_path = 'audio_files'
 audios = ['history', 'die_hard']
 
@@ -28,3 +30,5 @@ audio.saveAs(noisyAudio, sampleRate, 'noisy.wav')
 
 print('Spectral supressed audio:')
 audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
+
+plca.plca(noisyAudio, sampleRate)
