@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QIntValidator
 from app.menu import menu
 from app.appContent import appContent
 from audio import audioHandler
@@ -12,7 +12,7 @@ class Suppressor(QMainWindow):
         
         self.initUI()
         self.audioPath = ''
-        
+        self.millisToEstimate = 0
         
     def initUI(self):               
         exitAct = self.exitAction()
@@ -21,6 +21,7 @@ class Suppressor(QMainWindow):
         fileMenu = menubar.addMenu(' &File')
         fileMenu.addAction(exitAct)
 
+        self.onlyInt = QIntValidator()
         self.statusBar()
 
         centralWidget = QWidget()
@@ -42,7 +43,7 @@ class Suppressor(QMainWindow):
         return exitAct      
         
     def mountBoxes(self, contentGrid):
-        specSubGroup = appContent.spectralSubtractionBox()
+        specSubGroup = appContent.spectralSubtractionBox(self)
         flmsGroup = appContent.fastLMSBox()
         plcaGroup = appContent.plcaBox()
         runGroup = appContent.runBox(self)

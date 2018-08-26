@@ -1,10 +1,22 @@
 from PyQt5.QtWidgets import *
 
-def spectralSubtractionBox():
+def spectralSubtractionBox(mainWindow):
     specSubGroup = QGroupBox('Spectral Subtraction')
     specSubLayout = QVBoxLayout()
+    specSubLayout.addStretch(1)
 
-    specSubLayout.addWidget(QPushButton('test'))
+    estimateCheckBox = QCheckBox('Estimativa de ruído')
+
+    specSubLayout.addWidget(estimateCheckBox)
+
+    specSubLayout.addWidget(QLabel('Duração da estimativa (millis):'))
+    estimateValue = QLineEdit()
+    estimateValue.setValidator(mainWindow.onlyInt)
+    estimateValue.setEnabled(True)
+
+    estimateValue.textChanged.connect(lambda: setEstimateDuration(mainWindow, estimateValue))
+
+    specSubLayout.addWidget(estimateValue)
     specSubGroup.setLayout(specSubLayout)
 
     return specSubGroup
@@ -31,7 +43,7 @@ def runBox(mainWindow):
     runGroup = QGroupBox('Supressão')
     runLayout = QHBoxLayout()
 
-    button = QPushButton('Set audio')
+    button = QPushButton('Selecionar áudio')
     button.clicked.connect(lambda:setAudioPath(mainWindow))
     
     runLayout.addWidget(button)
@@ -44,3 +56,10 @@ def runBox(mainWindow):
 def setAudioPath(mainWindow):
     mainWindow.audioPath = QFileDialog.getOpenFileName(mainWindow)
     mainWindow.statusBar().showMessage('{}'.format(mainWindow.audioPath[0]))
+
+def setEstimateDuration(mainWindow, estimate):
+    if estimate.text() != '':
+        mainWindow.millisToEstimate = int(estimate.text())
+        mainWindow.statusBar().showMessage('{} milisegundos'.format(mainWindow.millisToEstimate))
+    else:
+        mainWindow.statusBar().showMessage('')
