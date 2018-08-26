@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QIntValidator
 from app.menu import menu
 from app.appContent import appContent
-from audio import audioHandler
+from app.supression import suppression
 
 class Suppressor(QMainWindow):
     
@@ -13,9 +13,10 @@ class Suppressor(QMainWindow):
         self.initUI()
         self.audioPath = ''
         self.noisePath = ''
-        self.millisToEstimate = 1
+        self.millisToEstimate = 100
         self.ProcessesAmount = 1
         self.splitRate = 1
+        self.algorithm = [True, False, False]
         
     def initUI(self):               
         exitAct = self.exitAction()

@@ -1,4 +1,7 @@
 from PyQt5.QtWidgets import *
+from app.supression.spectralSubtraction import spectralSubtraction
+# from audio import audioHandler
+
 
 def spectralSubtractionBox(mainWindow):
     specSubGroup = QGroupBox('Spectral Subtraction')
@@ -11,7 +14,7 @@ def spectralSubtractionBox(mainWindow):
 
     specSubLayout.addWidget(QLabel('Duração da estimativa (millis):'))
     estimateValue = QLineEdit()
-    estimateValue.setPlaceholderText('1')
+    estimateValue.setPlaceholderText('100')
     estimateValue.setValidator(mainWindow.onlyInt)
     estimateValue.textChanged.connect(lambda: setEstimateDuration(mainWindow, estimateValue))
     specSubLayout.addWidget(estimateValue)
@@ -73,10 +76,11 @@ def selectBox(mainWindow):
     selectLayout = QVBoxLayout()
 
     spectralOption = QRadioButton('Subtração spectral')
+    spectralOption.clicked.connect(lambda:setAlgorithm(mainWindow, 0))
     flmsOption = QRadioButton('Fast LMS')
+    flmsOption.clicked.connect(lambda:setAlgorithm(mainWindow, 1))
     plcaOption = QRadioButton('PLCA')
-
-    spectralOption.click()
+    plcaOption.clicked.connect(lambda:setAlgorithm(mainWindow, 2))
 
     selectLayout.addWidget(spectralOption)
     selectLayout.addWidget(flmsOption)
@@ -89,7 +93,11 @@ def runBox(mainWindow):
     runGroup = QGroupBox('Supressão')
     runLayout = QVBoxLayout()
 
-    runLayout.addWidget(QPushButton('Começar'))
+    start = QPushButton('Começar')
+
+    runLayout.addWidget(start)
+    start.clicked.connect(lambda:runSuppression(mainWindow))
+
     runLayout.addWidget(QPushButton('Salvar'))
     runGroup.setLayout(runLayout)
 
@@ -114,6 +122,7 @@ def setEstimateDuration(mainWindow, estimate):
         mainWindow.statusBar().showMessage('')
 
 def setProcessesAmount(mainWindow, processes):
+    print(mainWindow.algorithm)
     if processes.text() != '':
         if int(processes.text()) > 0:
             mainWindow.processesAmount = int(processes.text())
@@ -134,3 +143,18 @@ def setSplitRate(mainWindow, splitRate):
 
     else:
         mainWindow.statusBar().showMessage('')
+
+def setAlgorithm(mainWindow, index):
+    if mainWindow.algorithm[index] is False:
+        mainWindow.algorithm[0] = False
+        mainWindow.algorithm[1] = False
+        mainWindow.algorithm[2] = False
+        mainWindow.algorithm[index] = True
+
+def runSuppression(mainWindow):
+    audioPath = mainWindow.audioPath[0]
+    noisePath = mainWindow.noisePath[0]
+
+    mainWindow.suppressedAudio, elapsedTime = spectralSubtraction.spectral(audioPath, noisePath)
+    mainWindow.statusBar().showMessage('Tempo de execução: {} segundos'.format(elapsedTime))
+    

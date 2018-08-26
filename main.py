@@ -22,13 +22,15 @@ instances = int(totalSeconds / 2)
 suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
 # suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
 
-print(elapsedTime)
+audio.saveAs(noise, sampleRate, 'pureNoise.wav')
 
-print('Noisy audio:')
-# audio.play(noisyAudio, sampleRate)
+# print(elapsedTime)
+
+# print('Noisy audio:')
+# # audio.play(noisyAudio, sampleRate)
 audio.saveAs(noisyAudio, sampleRate, 'noisy.wav')
 
-print('Spectral supressed audio:')
-audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
+# print('Spectral supressed audio:')
+# audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
 
 # plca.plca(noisyAudio, sampleRate)
