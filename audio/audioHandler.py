@@ -1,15 +1,15 @@
-import scikits.audiolab as audiolab
+# import scikits.audiolab as audiolab
+import soundfile as sf
 
 def getData (audioPath):
-    data = audiolab.wavread(audioPath)
+    data = sf.read(audioPath)
 
     return data
 
-def play (audioArray, sampleRate):
-    audiolab.play(audioArray, sampleRate)
+# def play (audioArray, sampleRate):
+#     audiolab.play(audioArray, sampleRate)
 
 def saveAs(audioArray, sampleRate, fileName='test.wav'):
-    s = audiolab.Sndfile(fileName, mode='w', format=audiolab.Format(), channels=1, samplerate=sampleRate)
-    s.write_frames(audioArray)
+    sf.write(fileName, audioArray, sampleRate)
 
     print('Saved as: {}'.format(fileName))

@@ -13,14 +13,14 @@ audios = ['history', 'die_hard']
 
 testAudio = '{}/{}.wav'.format(audio_path, audios[0])
 
-audioArray, sampleRate, encoding = audio.getData(testAudio)
+audioArray, sampleRate = audio.getData(testAudio)
 
 totalSeconds = 1.0 * audioArray.size / sampleRate
 
 instances = int(totalSeconds / 2)
 
-# suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
-suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
+suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
+# suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
 
 print(elapsedTime)
 
@@ -31,4 +31,4 @@ audio.saveAs(noisyAudio, sampleRate, 'noisy.wav')
 print('Spectral supressed audio:')
 audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
 
-plca.plca(noisyAudio, sampleRate)
+# plca.plca(noisyAudio, sampleRate)

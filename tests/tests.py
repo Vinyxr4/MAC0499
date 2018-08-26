@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import math
 
 def prepare(audioPath, useEstimate, noiseType, freq, amplitude):
-    audioArray, sampleRate, encoding = audio.getData(audioPath)
+    audioArray, sampleRate = audio.getData(audioPath)
 
     noisyAudio = None
     noise = None

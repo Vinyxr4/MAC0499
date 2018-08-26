@@ -1,7 +1,9 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QGridLayout, QAction, qApp, QGroupBox, QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from app.menu import menu
+from app.appContent import appContent
+from audio import audioHandler
 
 class Suppressor(QMainWindow):
     
@@ -9,14 +11,17 @@ class Suppressor(QMainWindow):
         super().__init__()
         
         self.initUI()
+        self.audioPath = ''
         
         
     def initUI(self):               
-        # exitAct = self.exitAction()
+        exitAct = self.exitAction()
 
-        # menubar = self.menuBar()
-        # fileMenu = menubar.addMenu(' &File')
-        # fileMenu.addAction(exitAct)
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu(' &File')
+        fileMenu.addAction(exitAct)
+
+        self.statusBar()
 
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
@@ -37,52 +42,15 @@ class Suppressor(QMainWindow):
         return exitAct      
         
     def mountBoxes(self, contentGrid):
-        specSubGroup = self.spectralSubtractionBox()
-        flmsGroup = self.fastLMSBox()
-        plcaGroup = self.plcaBox()
-        runGroup = self.runBox()
+        specSubGroup = appContent.spectralSubtractionBox()
+        flmsGroup = appContent.fastLMSBox()
+        plcaGroup = appContent.plcaBox()
+        runGroup = appContent.runBox(self)
 
         contentGrid.addWidget(specSubGroup, 0, 0, 2, 2)
         contentGrid.addWidget(flmsGroup, 0, 2, 2 , 2)
         contentGrid.addWidget(plcaGroup, 0, 4, 2, 2)
         contentGrid.addWidget(runGroup, 2, 0, 1, 6)
-
-    def spectralSubtractionBox(self):
-        specSubGroup = QGroupBox('Spectral Subtraction')
-        specSubLayout = QVBoxLayout()
-
-        specSubLayout.addWidget(QPushButton('test'))
-        specSubGroup.setLayout(specSubLayout)
-
-        return specSubGroup
-        
-    def fastLMSBox(self):
-        flmsGroup = QGroupBox('Fast LMS')
-        flmsLayout = QVBoxLayout()
-
-        flmsLayout.addWidget(QPushButton('test'))
-        flmsGroup.setLayout(flmsLayout)
-
-        return flmsGroup
-    
-    def plcaBox(self):
-        plcaGroup = QGroupBox('PLCA')
-        plcaLayout = QVBoxLayout()
-
-        plcaLayout.addWidget(QPushButton('test'))
-        plcaGroup.setLayout(plcaLayout)
-
-        return plcaGroup
-
-    def runBox(self):
-        runGroup = QGroupBox('Supressão')
-        runLayout = QHBoxLayout()
-
-        runLayout.addWidget(QPushButton('Começar'))
-        runLayout.addWidget(QPushButton('Salvar'))
-        runGroup.setLayout(runLayout)
-
-        return runGroup
         
 if __name__ == '__main__':
     
