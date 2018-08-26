@@ -86,6 +86,4 @@ def spectral(audioPath, freq=1000, useEstimate=True, noiseType='sin', amplitude 
     firstPeriod = seconds * sampleRate
     
     suppressedAudio, noiseUsed, elapsedTime = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod, processes=processes, splitRate=splitRate)
-    print(np.mean((audioArray-noisyAudio)**2))
-    print(np.mean((audioArray-suppressedAudio)**2))
     return suppressedAudio, noisyAudio, sampleRate, noiseUsed, elapsedTime

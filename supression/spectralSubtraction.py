@@ -38,7 +38,8 @@ def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01, splitRa
               ]
 
     suppressedAudio = np.concatenate(results).ravel()
-    #suppressedAudio = spectralChunk(audioArray, noiseArray)
+    suppressedAudio = spectralChunk(audioArray, noiseArray)
+    
     elapsedTime = time.time() - startTime
 
     """time_step = 1.0 / 30

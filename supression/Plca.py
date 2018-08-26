@@ -214,10 +214,10 @@ def test_fourth_update(s, z, f, turns):
         # print (priories_f_given_sz[0])
         # print('****')
 
-    print (priories_f_given_sz[0])
-    print (priories_f_given_sz[1])
+    # print (priories_f_given_sz[0])
+    # print (priories_f_given_sz[1])
 
 # test_first_update(2, 2, 2)
 # test_second_update(10, 1, 1)
 # test_third_update(2, 10, 10)
-test_fourth_update(2, 2, 3, 2)
+# test_fourth_update(2, 2, 3, 2)

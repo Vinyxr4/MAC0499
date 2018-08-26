@@ -12,7 +12,10 @@ class Suppressor(QMainWindow):
         
         self.initUI()
         self.audioPath = ''
-        self.millisToEstimate = 0
+        self.noisePath = ''
+        self.millisToEstimate = 1
+        self.ProcessesAmount = 1
+        self.splitRate = 1
         
     def initUI(self):               
         exitAct = self.exitAction()
@@ -46,12 +49,16 @@ class Suppressor(QMainWindow):
         specSubGroup = appContent.spectralSubtractionBox(self)
         flmsGroup = appContent.fastLMSBox()
         plcaGroup = appContent.plcaBox()
+        audioGroup = appContent.audioBox(self)
+        selectGroup = appContent.selectBox(self)
         runGroup = appContent.runBox(self)
 
         contentGrid.addWidget(specSubGroup, 0, 0, 2, 2)
         contentGrid.addWidget(flmsGroup, 0, 2, 2 , 2)
         contentGrid.addWidget(plcaGroup, 0, 4, 2, 2)
-        contentGrid.addWidget(runGroup, 2, 0, 1, 6)
+        contentGrid.addWidget(audioGroup, 2, 0, 2, 2)
+        contentGrid.addWidget(selectGroup, 2, 2, 2, 2)
+        contentGrid.addWidget(runGroup, 2, 4, 2, 2)
         
 if __name__ == '__main__':
     
