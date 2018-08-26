@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import *
 from app.supression.spectralSubtraction import spectralSubtraction
-# from audio import audioHandler
-
+from audio import audioHandler
 
 def spectralSubtractionBox(mainWindow):
     specSubGroup = QGroupBox('Spectral Subtraction')
@@ -9,6 +8,7 @@ def spectralSubtractionBox(mainWindow):
     specSubLayout.addStretch(1)
 
     estimateCheckBox = QCheckBox('Estimativa de ruído')
+    estimateCheckBox.clicked.connect(lambda: setEstimate(mainWindow, estimateCheckBox))
 
     specSubLayout.addWidget(estimateCheckBox)
 
@@ -94,11 +94,15 @@ def runBox(mainWindow):
     runLayout = QVBoxLayout()
 
     start = QPushButton('Começar')
+    save = QPushButton('Salvar')
+    save.setEnabled(False)
 
     runLayout.addWidget(start)
-    start.clicked.connect(lambda:runSuppression(mainWindow))
+    start.clicked.connect(lambda:runSuppression(mainWindow, save))
 
-    runLayout.addWidget(QPushButton('Salvar'))
+    runLayout.addWidget(save)
+    save.clicked.connect(lambda:saveNewAudio(mainWindow))
+
     runGroup.setLayout(runLayout)
 
     return runGroup
@@ -111,9 +115,15 @@ def setNoisePath(mainWindow):
     mainWindow.noisePath = QFileDialog.getOpenFileName(mainWindow)
     mainWindow.statusBar().showMessage('{}'.format(mainWindow.noisePath[0]))
 
+def setEstimate(mainWindow, checkBox):
+    if checkBox.isChecked():
+        mainWindow.useEstimate = True
+    else:
+        mainWindow.useEstimate = False
+
 def setEstimateDuration(mainWindow, estimate):
     if estimate.text() != '':
-        if int(estimate.text()) > 100:
+        if int(estimate.text()) >= 100:
             mainWindow.millisToEstimate = int(estimate.text())
             mainWindow.statusBar().showMessage('{} milisegundos'.format(mainWindow.millisToEstimate))
         else:
@@ -122,7 +132,6 @@ def setEstimateDuration(mainWindow, estimate):
         mainWindow.statusBar().showMessage('')
 
 def setProcessesAmount(mainWindow, processes):
-    print(mainWindow.algorithm)
     if processes.text() != '':
         if int(processes.text()) > 0:
             mainWindow.processesAmount = int(processes.text())
@@ -151,10 +160,27 @@ def setAlgorithm(mainWindow, index):
         mainWindow.algorithm[2] = False
         mainWindow.algorithm[index] = True
 
-def runSuppression(mainWindow):
+def runSuppression(mainWindow, save):
     audioPath = mainWindow.audioPath[0]
     noisePath = mainWindow.noisePath[0]
+    useEstimate = mainWindow.useEstimate
 
-    mainWindow.suppressedAudio, elapsedTime = spectralSubtraction.spectral(audioPath, noisePath)
-    mainWindow.statusBar().showMessage('Tempo de execução: {} segundos'.format(elapsedTime))
+    elapsedTime = 0
+
+    save.setEnabled(False)
+
+    if mainWindow.algorithm[0] is True:
+        mainWindow.suppressedAudio, mainWindow.sampleRate, elapsedTime = spectralSubtraction.spectral(audioPath, noisePath, useEstimate=useEstimate)
+    # elif mainWindow.algorithm[1] is True:
+    #     mainWindow.suppressedAudio, elapsedTime = spectralSubtraction.flms(audioPath, noisePath)
+    # elif mainWindow.algorithm[2] is True:
+    #     mainWindow.suppressedAudio, elapsedTime = spectralSubtraction.plca(audioPath, noisePath)
     
+    mainWindow.statusBar().showMessage('Tempo de execução: {} segundos'.format(elapsedTime))
+
+    save.setEnabled(True)
+
+def saveNewAudio(mainWindow):
+    fileName = 'suppressedAudio.wav'
+    audioHandler.saveAs(mainWindow.suppressedAudio, mainWindow.sampleRate, fileName)
+    mainWindow.statusBar().showMessage('Salvo como {}'.format('suppressedAudio.wav'))

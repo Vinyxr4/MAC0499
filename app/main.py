@@ -14,6 +14,7 @@ class Suppressor(QMainWindow):
         self.audioPath = ''
         self.noisePath = ''
         self.millisToEstimate = 100
+        self.useEstimate = False
         self.ProcessesAmount = 1
         self.splitRate = 1
         self.algorithm = [True, False, False]
