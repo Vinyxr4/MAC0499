@@ -13,10 +13,14 @@ class Suppressor(QMainWindow):
         self.initUI()
         self.audioPath = ''
         self.noisePath = ''
+        self.cleanPath = ''
         self.millisToEstimate = 100
         self.useEstimate = False
-        self.ProcessesAmount = 1
+        self.processesAmount = 1
         self.splitRate = 1
+        self.M = 100
+        self.step = 0.1
+        self.forgetness = 0.9
         self.algorithm = [True, False, False]
         
     def initUI(self):               
@@ -49,7 +53,7 @@ class Suppressor(QMainWindow):
         
     def mountBoxes(self, contentGrid):
         specSubGroup = appContent.spectralSubtractionBox(self)
-        flmsGroup = appContent.fastLMSBox()
+        flmsGroup = appContent.fastLMSBox(self)
         plcaGroup = appContent.plcaBox()
         audioGroup = appContent.audioBox(self)
         selectGroup = appContent.selectBox(self)
