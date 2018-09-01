@@ -1,5 +1,6 @@
 import sys
-from app.main import suppression
+from audio import audioHandler
+from app.supression.spectralSubtraction import spectralSubtraction
 
 def throwError(error):
     errorString = ''
@@ -27,12 +28,16 @@ def throwError(error):
 
     if error in ['notEnoughSplitRate']:
         errorString = 'É necessário especificar pelo menos um bloco para esse método!'
+
+    if error in ['invalidSavePath']:
+        errorString = 'É ncessário especificar o nome utilizado para salvar o áudio suprimido!'
     
     raise ValueError(errorString)
 
 def argumentsParser(args):
     METHOD = '--mtd'
     NOISYPATH = '--audioPath'
+    SAVE = '--save'
     METHODS = ['specSub', 'flms', 'plca']
     
     if METHOD not in args:
@@ -69,6 +74,23 @@ def argumentsParser(args):
         options['numProcesses'] = 1
         options['splitRate'] = 1
         options['estimate'] = False
+        options['save'] = 'suppressed.wav'
+        options['estimateDuration'] = 100
+        options['noisePath'] = ''
+
+        if SAVE in args:
+            try:
+                savePathIndex = args.index(SAVE) + 1
+            except:
+                throwError('invalidSavePath')
+
+            try:
+                if args[savePathIndex].startswith('--'):
+                    throwError('invalidSavePath')
+            except:
+                throwError('invalidSavePath')
+
+            options['save'] = args[savePathIndex]
 
         if ESTIMATE in args:
             estimateDurationIndex = args.index(ESTIMATE) + 1
@@ -132,5 +154,18 @@ if __name__ == '__main__':
     
     methodUsed, audioPath, options = argumentsParser(sys.argv[1:])
 
-    if methodUsed == 'specSub':
+    print(methodUsed, audioPath, options)
 
+    if methodUsed == 'specSub':
+        audioPath = audioPath
+
+        noisePath = options['noisePath']
+        milliSeconds = int(options['estimateDuration'])
+        useEstimate = bool(options['estimate'])
+        processes = int(options['numProcesses'])
+        splitRate = int(options['splitRate'])
+
+        suppressed, sampleRate, elapsed = spectralSubtraction.spectral(audioPath, noisePath, useEstimate, milliSeconds, processes, splitRate)
+
+        print('Tempo de execução: {} segundos'.format(elapsed))
+        audioHandler.saveAs(suppressed, sampleRate, options['save'])
