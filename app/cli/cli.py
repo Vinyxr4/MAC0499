@@ -1,4 +1,5 @@
 import sys
+from app.main import suppression
 
 def throwError(error):
     errorString = ''
@@ -11,12 +12,27 @@ def throwError(error):
 
     if error in ['noNoisyPath', 'invalidNoisyPath']:
         errorString = 'É necessário especificar o arquivo de áudio a filtrar!'
+
+    if error in ['noNoisePath', 'invalidNoisePath']:
+        errorString = 'É necessário especificar o ruído a ser filtrado!'
+
+    if error in ['notEnoughProcesses']:
+        errorString = 'É necessário definir pelo menos 1 processo para esse método!'
+
+    if error in ['notAnInt']:
+        errorString = 'Esse valor precisa ser inteiro!'
+
+    if error in ['notEnoughDurationEstimation']:
+        errorString = 'É necessário especificar pelo menos 100 milissegundos para a estimativa!'
+
+    if error in ['notEnoughSplitRate']:
+        errorString = 'É necessário especificar pelo menos um bloco para esse método!'
     
     raise ValueError(errorString)
 
 def argumentsParser(args):
     METHOD = '--mtd'
-    NOISYPATH = '--npath'
+    NOISYPATH = '--audioPath'
     METHODS = ['specSub', 'flms', 'plca']
     
     if METHOD not in args:
@@ -45,10 +61,66 @@ def argumentsParser(args):
     options = {}
 
     if mtdUsed == METHODS[0]:
+        ESTIMATE = '--estimate'
+        NOESTIMATE = '--noisePath'
+        SPLITRATE = '--blocks'
+        PROCESSES = '--numProc'
+
         options['numProcesses'] = 1
         options['splitRate'] = 1
-        options['estimate'] = True
-        options['estimateDuration'] = 100
+        options['estimate'] = False
+
+        if ESTIMATE in args:
+            estimateDurationIndex = args.index(ESTIMATE) + 1
+            if estimateDurationIndex == len(args):
+                throwError('notEnoughDurationEstimation')
+            try:
+                estimateDuration = int(args[estimateDurationIndex])
+            except:
+                throwError('notAnInt')
+            if estimateDuration < 100:
+                throwError('notEnoughDurationEstimation')
+
+            options['estimateDuration'] = estimateDuration
+            options['estimate'] = True
+        else:
+            if NOESTIMATE not in args:
+                throwError('noNoisePath')
+
+            noisePathIndex = args.index(NOESTIMATE) + 1
+            if noisePathIndex == len(args):
+                throwError('noNoisePath')
+            if args[noisePathIndex].startswith('--'):
+                throwError('invalidNoisePath')
+            options['noisePath'] = args[noisePathIndex]
+
+        if PROCESSES in args:
+            numProcessesIndex = args.index(PROCESSES) + 1
+            if numProcessesIndex == len(args):
+                throwError('notEnoughDurationEstimation')
+            try:
+                numProcesses = int(args[numProcessesIndex])
+            except:
+                throwError('notAnInt')
+            if numProcesses < 1:
+                throwError('notEnoughProcesses')
+
+            options['numProcesses'] = numProcesses
+
+        if SPLITRATE in args:
+            splitRateIndex = args.index(SPLITRATE) + 1
+            if splitRateIndex == len(args):
+                throwError('notEnoughSplitRate')
+            try:
+                splitRate = int(args[splitRateIndex])
+            except:
+                throwError('notAnInt')
+            
+            if splitRate < 1:
+                throwError('notEnoughSplitRate')
+
+            options['splitRate'] = args[splitRateIndex]
+
     elif mtdUsed == METHODS[1]:
         options['M'] = 100
         options['step'] = 0.1
@@ -58,4 +130,7 @@ def argumentsParser(args):
         
 if __name__ == '__main__':
     
-    print(argumentsParser(sys.argv[1:]))
+    methodUsed, audioPath, options = argumentsParser(sys.argv[1:])
+
+    if methodUsed == 'specSub':
+
