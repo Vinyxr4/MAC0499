@@ -1,7 +1,7 @@
 from supression import fastLMS as flms
 from audio import audioHandler
 
-def fastlms(audioPath, cleanPath, M=1000, step=0.1, forget=0.9):
+def fastlms(audioPath, cleanPath, M=100, step=0.1, forget=0.9):
     cleanArray, noisyArray, sampleRate = prepare(audioPath, cleanPath)
     
     desiredArray = cleanArray
