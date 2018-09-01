@@ -1,2 +1,8 @@
 //Ignores wav audio files
 *.wav
+
+__pycache__
+
+.DS_Store
+
+*.pyc
