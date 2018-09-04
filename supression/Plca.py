@@ -20,11 +20,11 @@ def plca(audioArray, noiseArray):
     suppressedArray[:] *= 2
     suppressedArray[:] -= 1
 
-    maxLevel = pywt.dwt_max_level(len(noiseArray), 'coif5')
+    maxLevel = pywt.dwt_max_level(len(noiseArray), 'db8')
 
-    noiseDecomp = pywt.wavedec(noiseArray, 'coif5', level=maxLevel)
-    noisyDecomp = pywt.wavedec(audioArray, 'coif5', level=maxLevel)
-    obtainedDecomp = pywt.wavedec(suppressedArray, 'coif5', level=maxLevel)
+    noiseDecomp = pywt.wavedec(noiseArray, 'db8', level=maxLevel)
+    noisyDecomp = pywt.wavedec(audioArray, 'db8', level=maxLevel)
+    obtainedDecomp = pywt.wavedec(suppressedArray, 'db8', level=maxLevel)
 
     for i in range(len(noiseDecomp)):
         var = np.var(noiseDecomp[i])
@@ -38,7 +38,7 @@ def plca(audioArray, noiseArray):
 
         obtainedDecomp[i] = pywt.threshold(obtainedDecomp[i], threshold)
 
-    recovered = pywt.waverec(obtainedDecomp, 'coif5')
+    recovered = pywt.waverec(obtainedDecomp, 'db8')
 
     elapsedTime = time.time() - startTime
 
@@ -86,12 +86,11 @@ def update_priori_z_given_s(priories_sz_given_f, spectrum, s, z):
             dividend[s_prime][z_prime] += np.sum(spectrum * priories_sz_given_f[s_prime][z_prime])
 
     divisor = np.zeros((s))
+    divisor[:] = np.sum(spectrum * priories_sz_given_f[:])
+    
+    epslon = 0.0
     result = np.zeros((s, z))
-
     for s_prime in range(s):
-        divisor[s_prime] += np.sum(spectrum * priories_sz_given_f[s_prime])
-
-        epslon = 0.0
         result[s_prime] = dividend[s_prime] / divisor[s_prime] if divisor[s_prime] > epslon else np.zeros(z)
 
     return result
@@ -143,11 +142,10 @@ def fixed_plca(s, z, f, turns, noise, audioArray):
             for z_prime in range(z):
                 all_priories_sz_given_f[t_prime][s_prime][z_prime][:] = 1.0 / f
 
-    for t_prime in range(turns):
-        all_priories_sz_given_f[t_prime] = update_priori_sz_given_f(priories_s, priories_z_given_s, priories_f_given_sz, s, z , f)
-        priories_s = update_priori_s(all_priories_sz_given_f[t_prime], noises[t_prime], s, z, f)
-        priories_z_given_s = update_priori_z_given_s(all_priories_sz_given_f[t_prime], noises[t_prime], s, z)
-        priories_f_given_sz[0] = update_priori_f_given_sz(all_priories_sz_given_f, noises, 0, z, f, t_prime)
+    priories_s = update_priori_s(all_priories_sz_given_f[t_prime], noises[t_prime], s, z, f)
+    priories_z_given_s = update_priori_z_given_s(all_priories_sz_given_f[t_prime], noises[t_prime], s, z)
+    all_priories_sz_given_f[t_prime] = update_priori_sz_given_f(priories_s, priories_z_given_s, priories_f_given_sz, s, z , f)
+    priories_f_given_sz[0] = update_priori_f_given_sz(all_priories_sz_given_f, noises, 0, z, f, t_prime)
 
     priories_s[:] = 1.0 / s
 
@@ -177,10 +175,6 @@ def fixed_plca(s, z, f, turns, noise, audioArray):
 originalArray, sampleRate = audioHandler.getData('audio_files/trimmedDieHard.wav')
 audioArray, sampleRate = audioHandler.getData('audio_files/echoPlanarDieHard.wav')
 noiseArray, sampleRate = audioHandler.getData('audio_files/echoPlanarMono.wav')
-
-originalArray = originalArray[:]
-audioArray = audioArray[:]
-noiseArray = noiseArray[:]
 
 suppressedArray, newNoise, elapsedTime = plca(audioArray, noiseArray)
 
