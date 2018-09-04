@@ -42,17 +42,6 @@ def spectralSubtraction (audioArray, noiseArray = None, estimate = 0.01, splitRa
     
     elapsedTime = time.time() - startTime
 
-    """time_step = 1.0 / 30
-    freqs = np.fft.fftfreq(audioArray.size, time_step)
-    idx = np.argsort(freqs)
-
-    plt.plot(freqs[idx], audioPwr[idx])
-    plt.savefig('test.png')
-    plt.plot(freqs[idx], noisePwr[idx])
-    plt.show()
-    plt.plot(freqs[idx], subtraction[idx])
-    plt.show()"""
-
     return suppressedAudio, noiseArray, elapsedTime
 
 def spectralChunk(audioArray, noiseArray):
