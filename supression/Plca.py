@@ -1,6 +1,4 @@
 import numpy as np
-import math
-from audio import audioHandler
 import pywt
 import time
 
@@ -171,14 +169,3 @@ def fixed_plca(s, z, f, turns, noise, audioArray):
         t += all_priories_sz_given_f[turns-1][1][i][:]
 
     return t
-
-originalArray, sampleRate = audioHandler.getData('audio_files/trimmedDieHard.wav')
-audioArray, sampleRate = audioHandler.getData('audio_files/echoPlanarDieHard.wav')
-noiseArray, sampleRate = audioHandler.getData('audio_files/echoPlanarMono.wav')
-
-suppressedArray, newNoise, elapsedTime = plca(audioArray, noiseArray)
-
-print("Elapsed time: {}".format(elapsedTime))
-print(np.sum(np.abs(suppressedArray - originalArray))/len(originalArray))
-
-audioHandler.saveAs(suppressedArray, sampleRate, 'sera.wav')
