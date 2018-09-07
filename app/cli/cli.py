@@ -2,6 +2,7 @@ import sys
 from audio import audioHandler
 from app.supression.spectralSubtraction import spectralSubtraction
 from app.supression.fastLMS import fastLMS
+from app.supression.plca import plcaWavelet
 
 def throwError(error):
     errorString = ''
@@ -115,7 +116,7 @@ def argumentsParser(args):
     NOISYPATH = '--audioPath'
     SAVE = '--save'
     NOESTIMATE = '--noisePath'
-    METHODS = ['specSub', 'flms', 'plca']
+    METHODS = ['specSub', 'flms', 'plcaWavelet']
     
     if METHOD not in args:
         throwError('noMethod')
@@ -240,15 +241,22 @@ def argumentsParser(args):
         options = buildFloatArgument(FORGETNESS, args, options, 'forgetness', 1.0)
         options = buildFloatArgument(STEP, args, options, 'step', 1.0)
 
+    elif mtdUsed == METHODS[2]:
+        ITERATIONS = '--iterations'
+
+        options['iterations'] = 1
+
+        if NOESTIMATE not in args:
+            throwError('noNoisePath')
+
+        options = buildStringArgument(NOESTIMATE, args, options, 'noisePath')
+        options = buildIntArgument(ITERATIONS, args, options, 'iterations', 1)
+
     return mtdUsed, noisyAudioUsed, options
         
 if __name__ == '__main__':
     
     methodUsed, audioPath, options = argumentsParser(sys.argv[1:])
-
-    print(methodUsed, audioPath, options)
-
-    audioPath = audioPath
 
     if methodUsed == 'specSub':
         noisePath = options['noisePath']
@@ -267,6 +275,12 @@ if __name__ == '__main__':
 
         suppressed, sampleRate, elapsed = fastLMS.fastlms(audioPath, cleanPath, M, step, forget)
 
+    elif methodUsed == 'plcaWavelet':
+        noisePath = options['noisePath']
+        iterations = int(options['iterations'])
+
+        suppressed, sampleRate, elapsed = plcaWavelet.plca(audioPath, noisePath, iterations)
+    
     print('Tempo de execução: {} segundos'.format(elapsed))
     audioHandler.saveAs(suppressed, sampleRate, options['save'])
     
