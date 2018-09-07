@@ -1,89 +1,132 @@
 import audio.audioHandler as audio
-import supression.spectralSubtraction as specSub
-import supression.fastLMS as flms
-import noisy.noisy as noisy
 import numpy as np
 import matplotlib.pyplot as plt
-import math
+import csv
+import time
 
-def prepare(audioPath, useEstimate, noiseType, freq, amplitude):
-    audioArray, sampleRate = audio.getData(audioPath)
+from app.supression.spectralSubtraction import spectralSubtraction
+from app.supression.fastLMS import fastLMS
+from app.supression.plca import plcaWavelet
 
-    noisyAudio = None
-    noise = None
+def runTests():
+    audioPrefix = 'audio_files/'
 
-    if noiseType == 'sin':
-        noisyAudio, noise = noisy.sinNoise(audioArray, sampleRate, freq, amplitude)
-    elif noiseType == 'random':
-        noisyAudio, noise = noisy.randomNoise(audioArray, amplitude)
-
-    if useEstimate:
-        noise = None
-
-    return audioArray, sampleRate, noisyAudio, noise
-
-def fitArray(arr1, arr2):
-    fittedArr = arr1
-
-    if arr1.size < arr2.size:
-        repetitions = int(np.floor(arr2.size/arr1.size))
-        fittedArr = np.tile(fittedArr, repetitions)
-        fittedArr = np.append(fittedArr, fittedArr[0:arr2.size - fittedArr.size])
-    elif arr1.size > arr2.size:
-        fittedArr = arr1[0:arr2.size]
-
-    return fittedArr
-
-def fastlms(audioPath, freq=1000, noiseType='sin', amplitude=0.1, M=1000, step=0.1, forget=0.9):
-    audioArray, sampleRate, noisyAudio, noise = prepare(audioPath, False, noiseType, freq, amplitude)    
+    resultPrefix = 'results/'
+    # audioLengthMultipliers = [2, 4, 10]
+    audioLengthMultipliers = [10]
+    repetitions = 20
     
-    t = int(math.floor(1.2*sampleRate/freq))
+    audioFile = 'die_hard'
+    # noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
+    noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
+        
+    methods = ['spectralSubtraction', 'flms', 'plcaWavelet']
+    # methods = ['plcaWavelet']
 
-    noiseArray = None
-    if noiseArray is None:
-        lastOnRange = int(np.floor(sampleRate/freq))
-        noiseEstimate = noisyAudio[0:lastOnRange]
+    audioArray, sampleRate = audio.getData(audioPrefix + audioFile + '.wav')
+    audioArray = audioArray[:sampleRate * 30]
 
-        repetitions = int(np.floor(noisyAudio.size/noiseEstimate.size))
+    headers = ['']
+    content = []
 
-        noiseArray = np.tile(noiseEstimate, repetitions)
-        noiseArray = np.append(noiseArray, noiseEstimate[0:noisyAudio.size - noiseArray.size])
+    testsAmount = repetitions * len(noiseFiles) * len(audioLengthMultipliers) * len(methods)
+
+    start = time.time()
+
+    current = 0
+    for multiplier in audioLengthMultipliers:
+        testAudio = np.tile(audioArray, multiplier)
+
+        cleanFile = resultPrefix + 'cleanAudios/clean_' + audioFile + str(30 * multiplier) + '.wav'
+        audio.saveAs(testAudio, sampleRate, cleanFile)
+        n = 1
+        for noiseFile in noiseFiles:
+            noise, sampleRate = audio.getData(audioPrefix + noiseFile + '.wav')
+            noise = [row[0] for row in noise[:sampleRate * 5]]
+
+            testNoise = np.tile(noise, multiplier * 6)
+
+        
+            testNoise = testNoise * 4
+
+            noiseTransf = np.fft.fft(testNoise)
+            audioTransf = np.fft.fft(testAudio)
+            noisy = np.fft.ifft(noiseTransf + audioTransf).real
+            
+            noisyFile = resultPrefix + 'noisyAudios/noisy' + noiseFile + str(30 * multiplier) + '.wav'
+            audio.saveAs(noisy, sampleRate, noisyFile)
+
+            testNoiseFile = resultPrefix + 'noiseAudios/test' + noiseFile + str(30 * multiplier) + '.wav'
+            audio.saveAs(testNoise, sampleRate, testNoiseFile)
+
+            n += 1
+
+            mix = plt.figure(1)
+            sep = plt.figure(2)
+            ax = mix.add_subplot(111)
+            bx = sep.add_subplot(111)
+
+            for method in methods:
+                print('Running for {} on noise {} with length {}'.format(method, noiseFile, 30 * multiplier))
+
+                headers.append('{}_{}_{}'.format(method, noiseFile, 30 * multiplier))
+
+                times = np.zeros(repetitions)
+
+                for turn in range(repetitions):
+                    if method == 'spectralSubtraction':
+                        suppressedAudio, sampleRate, elapsed = spectralSubtraction.spectral(noisyFile, testNoiseFile, useEstimate=False, splitRate=4)
+                    elif method == 'flms':
+                        suppressedAudio, sampleRate, elapsed = fastLMS.fastlms(noisyFile, cleanFile)
+                    else:
+                        blks = int((multiplier * 30) / 60) + 1
+                        suppressedAudio, sampleRate, elapsed = plcaWavelet.plca(noisyFile, testNoiseFile, 10)
+                    
+                    current += 1
+                    currentPerc = round((100.0 * current) / testsAmount, 3)
+
+                    now = time.time() - start
+
+                    remain = round((100.0 - currentPerc) * (now / currentPerc), 2)
+
+                    print('********** {}% completo, {} segundos restantes **********'.format(currentPerc, remain))
+
+                    times[turn] = elapsed
+
+                content.append(round(np.mean(times), 6))
+                content.append(round(np.std(times), 6))
+                content.append(round(np.var(times), 6))
+                content.append(round(((suppressedAudio - testAudio) ** 2).mean(), 6))
+
+                bx.magnitude_spectrum(suppressedAudio, Fs=sampleRate)
+                ax.magnitude_spectrum(suppressedAudio, Fs=sampleRate)
+                sep.savefig(resultPrefix + 'suppressedSpectra/suppressed' + method + noiseFile + str(30 * multiplier) + '.png')
+                bx.clear()
+
+                suppressedFile = resultPrefix + 'suppressedAudios/suppressed' + method + noiseFile + str(30 * multiplier) + '.wav'
+                audio.saveAs(suppressedAudio, sampleRate, suppressedFile)
+            
+            mix.savefig(resultPrefix + 'suppressedSpectra/suppressed' + noiseFile + str(30 * multiplier) + '.png')
     
-    desiredArray = np.append(np.zeros(t), noisyAudio[:-t])
+    with open('{}results_{}.csv'.format(resultPrefix, 10 * 30), 'w') as csvfile:
+        fileWritter = csv.writer(csvfile, delimiter=',')
 
-    suppressedAudio, elapsedTime = flms.fastLms(noisyAudio, desiredArray, M, step=step, forgetness=forget)
+        fileWritter.writerow(headers)
+        
+        mean = []
+        std = []
+        var = []
+        error = []
 
-    # print(np.mean((audioArray-suppressedAudio)**2))
+        for i in range(0, len(content), 4):
+            mean.append(content[i])
+            std.append(content[i+1])
+            var.append(content[i+2])
+            error.append(content[i+3])
 
-    return suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime
+        fileWritter.writerow(['Mean time'] + mean)
+        fileWritter.writerow(['Time stdDev'] + std)
+        fileWritter.writerow(['Time var'] + var)
+        fileWritter.writerow(['Squared Error'] + error)
 
-def plotResult(audioArray, noisyAudio, suppressedAudio, save=False):
-    time_step = 1.0 / 30
-    freqs = np.fft.fftfreq(audioArray.size, time_step)
-    idx = np.argsort(freqs)
-
-    original = np.absolute(np.fft.fft(audioArray))**2
-    noisy = np.absolute(np.fft.fft(noisyAudio))**2
-    suppressed = np.absolute(np.fft.fft(suppressedAudio))**2
-    plt.plot(freqs[idx], original[idx])
-    if save:
-        plt.savefig('originalPwr.png')
-    plt.show()
-
-    plt.plot(freqs[idx], noisy[idx])
-    if save:
-        plt.savefig('noisyPwr.png')
-    plt.show()
-
-    plt.plot(freqs[idx], suppressed[idx])
-    if save:
-        plt.savefig('suppressedPwr.png')
-    plt.show()
-
-def spectral(audioPath, freq=1000, useEstimate=True, noiseType='sin', amplitude = 0.1, seconds = 0.01, processes=4, splitRate=1):
-    audioArray, sampleRate, noisyAudio, noise = prepare(audioPath, useEstimate, noiseType, freq, amplitude)    
-
-    firstPeriod = seconds * sampleRate
-    
-    suppressedAudio, noiseUsed, elapsedTime = specSub.spectralSubtraction(noisyAudio, noiseArray=noise, estimate=firstPeriod, processes=processes, splitRate=splitRate)
-    return suppressedAudio, noisyAudio, sampleRate, noiseUsed, elapsedTime
+runTests()
