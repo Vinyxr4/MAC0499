@@ -244,13 +244,13 @@ def argumentsParser(args):
     elif mtdUsed == METHODS[2]:
         ITERATIONS = '--iterations'
 
-        options['iterations'] = 1
+        options['iterations'] = 2
 
         if NOESTIMATE not in args:
             throwError('noNoisePath')
 
         options = buildStringArgument(NOESTIMATE, args, options, 'noisePath')
-        options = buildIntArgument(ITERATIONS, args, options, 'iterations', 1)
+        options = buildIntArgument(ITERATIONS, args, options, 'iterations', 2)
 
     return mtdUsed, noisyAudioUsed, options
         

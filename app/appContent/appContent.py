@@ -1,12 +1,13 @@
 from PyQt5.QtWidgets import *
 from app.supression.spectralSubtraction import spectralSubtraction
 from app.supression.fastLMS import fastLMS
+from app.supression.plca import plcaWavelet
 from audio import audioHandler
 
 def spectralSubtractionBox(mainWindow):
     specSubGroup = QGroupBox('Spectral Subtraction')
     specSubLayout = QVBoxLayout()
-    specSubLayout.addStretch(1)
+    # specSubLayout.addStretch(1)
 
     specSubLayout.addWidget(QLabel('Número de processos utilizados:'))
     processes = QLineEdit()
@@ -55,11 +56,18 @@ def fastLMSBox(mainWindow):
 
     return flmsGroup
 
-def plcaBox():
+def plcaBox(mainWindow):
     plcaGroup = QGroupBox('PLCA')
     plcaLayout = QVBoxLayout()
 
-    plcaLayout.addWidget(QPushButton('test'))
+    plcaLayout.addWidget(QLabel('Número de iterações:'))
+
+    iterations = QLineEdit()
+    iterations.setPlaceholderText('2')
+    iterations.setValidator(mainWindow.onlyInt)
+    iterations.textChanged.connect(lambda: setIterarions(mainWindow, iterations))
+    plcaLayout.addWidget(iterations)
+
     plcaGroup.setLayout(plcaLayout)
 
     return plcaGroup
@@ -172,6 +180,16 @@ def setBlocks(mainWindow, M):
     else:
         mainWindow.statusBar().showMessage('')
 
+def setIterarions(mainWindow, iterations):
+    if iterations.text() != '':
+        if int(iterations.text()) >= 2:
+            mainWindow.iterations = int(iterations.text())
+            mainWindow.statusBar().showMessage('{} iterações'.format(mainWindow.iterations))
+        else:
+            mainWindow.statusBar().showMessage('São necessárias pelo menos 2 iterações!')
+    else:
+        mainWindow.statusBar().showMessage('')
+
 def setForgetness(mainWindow, forgetness):
     if forgetness.text() != '':
         if int(forgetness.text()) <= 100:
@@ -225,6 +243,10 @@ def runSuppression(mainWindow, save):
     audioPath = mainWindow.audioPath[0]
     elapsedTime = 0
 
+    if audioPath == '':
+        mainWindow.statusBar().showMessage('É necessário definir um arquivo para realizar supressão!')
+        return
+        
     save.setEnabled(False)
 
     if mainWindow.algorithm[0] is True:
@@ -240,14 +262,18 @@ def runSuppression(mainWindow, save):
         step = mainWindow.step
         forget = mainWindow.forgetness
         mainWindow.suppressedAudio, mainWindow.sampleRate, elapsedTime = fastLMS.fastlms(audioPath, cleanPath, M, step, forget)
-    # elif mainWindow.algorithm[2] is True:
-    #     mainWindow.suppressedAudio, elapsedTime = spectralSubtraction.plca(audioPath, noisePath)
+    elif mainWindow.algorithm[2] is True:
+        noisePath = mainWindow.noisePath[0]
+        iterations = mainWindow.iterations
+        mainWindow.suppressedAudio, mainWindow.sampleRate, elapsedTime = plcaWavelet.plca(audioPath, noisePath, iterations)
     
     mainWindow.statusBar().showMessage('Tempo de execução: {} segundos'.format(elapsedTime))
 
     save.setEnabled(True)
 
 def saveNewAudio(mainWindow):
-    fileName = 'suppressedAudio.wav'
+    mainWindow.savePath = QFileDialog.getSaveFileName(mainWindow)
+
+    fileName = mainWindow.savePath[0]
     audioHandler.saveAs(mainWindow.suppressedAudio, mainWindow.sampleRate, fileName)
-    mainWindow.statusBar().showMessage('Salvo como {}'.format('suppressedAudio.wav'))
+    mainWindow.statusBar().showMessage('Salvo como {}'.format(fileName))
