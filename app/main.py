@@ -21,6 +21,7 @@ class Suppressor(QMainWindow):
         self.M = 100
         self.step = 0.1
         self.forgetness = 0.9
+        self.iterations = 2
         self.algorithm = [True, False, False]
         
     def initUI(self):               
@@ -54,7 +55,7 @@ class Suppressor(QMainWindow):
     def mountBoxes(self, contentGrid):
         specSubGroup = appContent.spectralSubtractionBox(self)
         flmsGroup = appContent.fastLMSBox(self)
-        plcaGroup = appContent.plcaBox()
+        plcaGroup = appContent.plcaBox(self)
         audioGroup = appContent.audioBox(self)
         selectGroup = appContent.selectBox(self)
         runGroup = appContent.runBox(self)

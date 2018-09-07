@@ -2,7 +2,7 @@ import numpy as np
 import pywt
 import time
 
-def plca(audioArray, noiseArray):
+def plca(audioArray, noiseArray, iterations):
     startTime = time.time()
     
     usedAudio = np.copy(audioArray)
@@ -13,7 +13,7 @@ def plca(audioArray, noiseArray):
     usedNoise[:] += 1
     usedNoise[:] *= 0.5
 
-    suppressedArray = fixed_plca(2, 10, len(audioArray), 10, usedNoise, usedAudio)
+    suppressedArray = fixed_plca(2, 10, len(audioArray), iterations, usedNoise, usedAudio)
 
     suppressedArray[:] *= 2
     suppressedArray[:] -= 1
