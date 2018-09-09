@@ -12,16 +12,16 @@ def runTests():
     audioPrefix = 'audio_files/'
 
     resultPrefix = 'results/'
-    # audioLengthMultipliers = [2, 4, 10]
-    audioLengthMultipliers = [10]
+    # audioLengthMultipliers = [2, 4, 6]
+    audioLengthMultipliers = [2]
     repetitions = 20
     
     audioFile = 'die_hard'
     # noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
-    noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
+    noiseFiles = ['echoPlanar']
         
-    methods = ['spectralSubtraction', 'flms', 'plcaWavelet']
-    # methods = ['plcaWavelet']
+    # methods = ['spectralSubtraction', 'flms', 'plcaWavelet']
+    methods = ['spectralSubtraction']
 
     audioArray, sampleRate = audio.getData(audioPrefix + audioFile + '.wav')
     audioArray = audioArray[:sampleRate * 30]
@@ -39,13 +39,19 @@ def runTests():
 
         cleanFile = resultPrefix + 'cleanAudios/clean_' + audioFile + str(30 * multiplier) + '.wav'
         audio.saveAs(testAudio, sampleRate, cleanFile)
-        n = 1
+
+        cle = plt.figure(1)
+        dx = cle.add_subplot(111)
+
+        dx.magnitude_spectrum(testAudio, Fs=sampleRate)
+        cle.savefig(resultPrefix + 'cleanSpectra/spectra' + str(30 * multiplier) + '.png')
+        dx.clear()
+
         for noiseFile in noiseFiles:
             noise, sampleRate = audio.getData(audioPrefix + noiseFile + '.wav')
             noise = [row[0] for row in noise[:sampleRate * 5]]
 
             testNoise = np.tile(noise, multiplier * 6)
-
         
             testNoise = testNoise * 4
 
@@ -59,12 +65,17 @@ def runTests():
             testNoiseFile = resultPrefix + 'noiseAudios/test' + noiseFile + str(30 * multiplier) + '.wav'
             audio.saveAs(testNoise, sampleRate, testNoiseFile)
 
-            n += 1
+            mix = plt.figure(2)
+            sep = plt.figure(3)
+            nos = plt.figure(4)
 
-            mix = plt.figure(1)
-            sep = plt.figure(2)
             ax = mix.add_subplot(111)
             bx = sep.add_subplot(111)
+            cx = nos.add_subplot(111)
+
+            cx.magnitude_spectrum(noisy, Fs=sampleRate)
+            nos.savefig(resultPrefix + 'noisySpectra/spectra' + noiseFile + str(30 * multiplier) + '.png')
+            cx.clear()
 
             for method in methods:
                 print('Running for {} on noise {} with length {}'.format(method, noiseFile, 30 * multiplier))
@@ -108,7 +119,7 @@ def runTests():
             
             mix.savefig(resultPrefix + 'suppressedSpectra/suppressed' + noiseFile + str(30 * multiplier) + '.png')
     
-    with open('{}results_{}.csv'.format(resultPrefix, 10 * 30), 'w') as csvfile:
+    with open('{}results_{}.csv'.format(resultPrefix, 6 * 30), 'w') as csvfile:
         fileWritter = csv.writer(csvfile, delimiter=',')
 
         fileWritter.writerow(headers)
