@@ -1,21 +1,43 @@
-# import audio.audioHandler as audio
-# import supression.spectralSubtraction as specSub
-# import supression.fastLMS as flms
-# import noisy.noisy as noisy
-# import tests.tests as test
-# import numpy as np
-# import multiprocessing as mp
-# import matplotlib.pyplot as plt
+import audio.audioHandler as audio
+import supression.spectralSubtraction as specSub
+import supression.fastLMS as flms
+import noisy.noisy as noisy
+import tests.tests as test
+import numpy as np
+import multiprocessing as mp
+import matplotlib.pyplot as plt
 
-# import supression.Plca as plca
+import supression.Plca as plca
 
-# audio_path = 'audio_files'
-# audios = ['history', 'die_hard']
+audio_path = 'audio_files'
+audios = ['history', 'die_hard']
 
-# # testAudio = '{}/{}.wav'.format(audio_path, audios[1])
+# testAudio = '{}/{}.wav'.format(audio_path, audios[1])
 
-# audioArray, sampleRate2 = audio.getData('audio_files/echoPlanar.wav')
-# audioArray2, sampleRate = audio.getData('audio_files/die_hard.wav')
+audioArray, sampleRate = audio.getData('audio_files/trimmedDieHard.wav')
+audioArray2, sampleRate2 = audio.getData('audio_files/lowflmsdie3.wav')
+
+print(((audioArray - audioArray2) ** 2).mean())
+
+def plotSpectrum(audioArray, audioArray2, sampleRate):
+    plt.subplot(1, 2, 1)
+    plt.magnitude_spectrum(audioArray, Fs=sampleRate)
+    plt.subplot(1, 2, 2)
+    plt.magnitude_spectrum(audioArray2, Fs=sampleRate)
+    plt.show()
+
+def low_noise(noisePath):
+    noiseArray, sampleRate = audio.getData(noisePath)
+
+    return noiseArray * 0.3, sampleRate
+
+def saveArray(audioArray, sampleRate, fileName):
+    audio.saveAs(audioArray, sampleRate, fileName)
+
+plotSpectrum(audioArray, audioArray2, sampleRate)
+
+# noiseArray, noiseRate = low_noise('audio_files/echoPlanarMono.wav')
+# saveArray(noiseArray, noiseRate, 'audio_files/lowerEchoPlanarMono.wav')
 
 # audioArray2 = audioArray2[:len(audioArray)]
 # audioArray3 = [row[0] for row in audioArray]
@@ -37,54 +59,54 @@
 
 # testeTransf = np.fft.fft(teste)
 # print(np.sum(np.abs(teste-audioNoiseNonNorm))/len(audioArray3))
-# # print(np.abs(resultant - teste)[:100])
+# print(np.abs(resultant - teste)[:100])
 
-# # resultant = [row[0] for row in audioArray] + audioArray2
+# resultant = [row[0] for row in audioArray] + audioArray2
 
-# # fig = plt.figure(figsize=(1, 2))
+# fig = plt.figure(figsize=(1, 2))
 
-# # plt.subplot(1, 4, 1)
-# # plt.plot(resultant)
-# # plt.subplot(1, 4, 2)
-# # plt.plot(teste)
-# # plt.subplot(1, 4, 3)
-# # plt.plot(audioArray2)
-# # plt.subplot(1, 4, 4)
-# # plt.plot(audioArray3)
-# # plt.show()
+# plt.subplot(1, 4, 1)
+# plt.plot(resultant)
+# plt.subplot(1, 4, 2)
+# plt.plot(teste)
+# plt.subplot(1, 4, 3)
+# plt.plot(audioArray2)
+# plt.subplot(1, 4, 4)
+# plt.plot(audioArray3)
+# plt.show()
 
 # audio.saveAs(resultant, sampleRate, 'audio_files/echoPlanarDieHard.wav')
 # audio.saveAs(audioArray2, sampleRate, 'audio_files/trimmedDieHard.wav')
 # audio.saveAs(audioArray3, sampleRate, 'audio_files/echoPlanarMono.wav')
-# # audioArray = audioArray[:22000]
+# audioArray = audioArray[:22000]
 
-# # totalSeconds = 1.0 * audioArray.size / sampleRate
+# totalSeconds = 1.0 * audioArray.size / sampleRate
 
-# # instances = int(totalSeconds / 2)
+# instances = int(totalSeconds / 2)
 
-# # suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
-# # suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
+# suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.spectral(testAudio)
+# suppressedAudio, noisyAudio, sampleRate, noise, elapsedTime = test.fastlms(testAudio)
 
-# # audio.saveAs(noise, sampleRate, 'pureNoise2.wav')
+# audio.saveAs(noise, sampleRate, 'pureNoise2.wav')
 
-# # print(elapsedTime)
+# print(elapsedTime)
 
-# # print('Noisy audio:')
-# # # audio.play(noisyAudio, sampleRate)
-# # audio.saveAs(noisyAudio, sampleRate, 'noisy2.wav')
+# print('Noisy audio:')
+# # audio.play(noisyAudio, sampleRate)
+# audio.saveAs(noisyAudio, sampleRate, 'noisy2.wav')
 
-# # print('Spectral supressed audio:')
-# # audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
+# print('Spectral supressed audio:')
+# audio.saveAs(suppressedAudio, sampleRate, 'test.wav')
 
-# # # plca.plca(noisyAudio, sampleRate)
+# # plca.plca(noisyAudio, sampleRate)
 
-# # audio1, sample1 = audio.getData(('audio_files/echoPlanarDieHard.wav'))
-# # audio2, sample2 = audio.getData(('sera.wav'))
+# audio1, sample1 = audio.getData(('audio_files/echoPlanarDieHard.wav'))
+# audio2, sample2 = audio.getData(('sera.wav'))
 
-# # # fig = plt.figure(figsize=(1, 2))
+# # fig = plt.figure(figsize=(1, 2))
 
-# # plt.subplot(1, 2, 1)
-# # plt.plot(np.fft.fft(audio1))
-# # plt.subplot(1, 2, 2)
-# # plt.plot(np.fft.fft(audio2))
-# # plt.show()
+# plt.subplot(1, 2, 1)
+# plt.plot(np.fft.fft(audio1))
+# plt.subplot(1, 2, 2)
+# plt.plot(np.fft.fft(audio2))
+# plt.show()
