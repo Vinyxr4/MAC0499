@@ -3,4 +3,7 @@ TCC
 # Libraries
 
 * Numpy
-* Scikit.audiolab
+* Matplotlib
+* PySoundFile
+* PyQt5
+* Pywt
