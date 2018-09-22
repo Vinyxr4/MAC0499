@@ -17,11 +17,9 @@ def runTests():
     repetitions = 20
     
     audioFile = 'die_hard'
-    # noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
-    noiseFiles = ['echoPlanar']
+    noiseFiles = ['echoPlanar', 'diffusion', 'fastSpinEcho']
         
-    # methods = ['spectralSubtraction', 'flms', 'plcaWavelet']
-    methods = ['spectralSubtraction']
+    methods = ['spectralSubtraction', 'flms', 'plcaWavelet']
 
     audioArray, sampleRate = audio.getData(audioPrefix + audioFile + '.wav')
     audioArray = audioArray[:sampleRate * 30]
@@ -43,7 +41,7 @@ def runTests():
         cle = plt.figure(1)
         dx = cle.add_subplot(111)
 
-        dx.magnitude_spectrum(testAudio, Fs=sampleRate)
+        cleanSpectrum, cleanFreqs, cleanLine = dx.magnitude_spectrum(testAudio, Fs=sampleRate)
         cle.savefig(resultPrefix + 'cleanSpectra/spectra' + str(30 * multiplier) + '.png')
         dx.clear()
 
@@ -73,7 +71,12 @@ def runTests():
             bx = sep.add_subplot(111)
             cx = nos.add_subplot(111)
 
-            cx.magnitude_spectrum(noisy, Fs=sampleRate)
+            noisySpectrum, noisyFreqs, noisyLine = cx.magnitude_spectrum(noisy, Fs=sampleRate)
+            noisyCleanDiff = np.sum(noisySpectrum - cleanSpectrum)
+            noisyCleanRate = noisyCleanDiff / (np.sum(cleanSpectrum) + np.sum(noisySpectrum))
+
+            print("Noisy/Clean rate: {}".format(noisyCleanRate))
+            
             nos.savefig(resultPrefix + 'noisySpectra/spectra' + noiseFile + str(30 * multiplier) + '.png')
             cx.clear()
 
@@ -109,8 +112,12 @@ def runTests():
                 content.append(round(np.var(times), 6))
                 content.append(round(((suppressedAudio - testAudio) ** 2).mean(), 6))
 
-                bx.magnitude_spectrum(suppressedAudio, Fs=sampleRate)
+                suppressedSpectrum, suppressedFreqs, suppressedLine = bx.magnitude_spectrum(suppressedAudio, Fs=sampleRate)
                 ax.magnitude_spectrum(suppressedAudio, Fs=sampleRate)
+                suppressedCleanDiff = np.sum(suppressedSpectrum - cleanSpectrum)
+                suppressedCleanRate = (1.0 * suppressedCleanDiff) / (np.sum(cleanSpectrum) + np.sum(suppressedSpectrum))
+
+                print("Suppressed/Clean rate: {}".format(suppressedCleanRate))
                 sep.savefig(resultPrefix + 'suppressedSpectra/suppressed' + method + noiseFile + str(30 * multiplier) + '.png')
                 bx.clear()
 
