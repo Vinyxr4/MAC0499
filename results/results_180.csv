@@ -1,5 +1,5 @@
-,spectralSubtraction_echoPlanar_60,flms_echoPlanar_60,plcaWavelet_echoPlanar_60
-Mean time,0.583656,1.014456,9.380977
-Time stdDev,0.0,0.0,0.0
-Time var,0.0,0.0,0.0
-Squared Error,0.000509,0.004879,0.003472
+,spectralSubtraction_echoPlanar_180,flms_echoPlanar_180,plcaWavelet_echoPlanar_180,spectralSubtraction_diffusion_180,flms_diffusion_180,plcaWavelet_diffusion_180,spectralSubtraction_fastSpinEcho_180,flms_fastSpinEcho_180,plcaWavelet_fastSpinEcho_180
+Mean time,1.899378,3.216285,40.645439,1.921839,3.389353,40.517081,1.937032,3.527013,44.969892
+Time stdDev,0.080345,0.34009,2.959143,0.067823,0.28146,3.598675,0.056291,0.524788,9.726319
+Time var,0.006455,0.115661,8.756529,0.0046,0.07922,12.950464,0.003169,0.275403,94.601272
+Squared Error,0.000509,0.006836,0.003523,0.000232,0.001736,0.002718,8.4e-05,0.001004,0.002627
